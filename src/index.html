@@ -1,28 +1,665 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Welcome to nginx!</title>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>Docker镜像加速器🚀</title>
+    <meta name="description" content="Docker镜像加速站是一种通过配置国内或国际的镜像加速器，来提高从Docker Hub等官方仓库拉取镜像的速度和稳定性的服务。">
+    <meta property="og:title" content="Docker镜像加速站" />
+    <meta property="og:description" content="Docker镜像加速站是一种通过配置国内或国际的镜像加速器，来提高从Docker Hub等官方仓库拉取镜像的速度和稳定性的服务。" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-      html {
-        color-scheme: light dark;
-      }
-      body {
-        width: 35em;
-        margin: 0 auto;
-        font-family: Tahoma, Verdana, Arial, sans-serif;
-      }
+        /* 重置和基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #24292e;
+            background: #f6f8fa;
+            margin: 0;
+            padding-bottom: 2rem;
+        }
+
+        /* 导航栏样式 */
+        .nav-wrapper {
+            background: #24292e;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 0 1rem;
+        }
+
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 64px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            color: white;
+            font-weight: 600;
+            font-size: 1.25rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-brand:hover {
+            color: #2188ff;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 8px;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            color: #c8c9cb;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-menu a:hover {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-menu a.active {
+            color: white;
+            background: #1f6feb;
+        }
+
+        /* 页面容器样式 */
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        /* 其他原有样式保持不变... */
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .nav {
+                height: auto;
+                padding: 1rem 0;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-menu {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+        }
+
+        /* 搜索框样式 */
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        #search-input {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #search-input:focus {
+            outline: none;
+            border-color: #2188ff;
+            box-shadow: 0 0 0 3px rgba(33,136,255,0.2);
+        }
+
+        #search-button {
+            padding: 12px;
+            background-color: #2188ff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        #search-button:hover {
+            background-color: #1c7cd6;
+        }
+
+        #search-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* 其他内容样式 */
+        .image-acceleration-section {
+            text-align: center;
+        }
+
+        .main-title {
+            font-size: 2em;
+            color: #24292e;
+            margin-bottom: 1.5rem;
+        }
+
+        .image-input-section {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .input-tip {
+            color: #586069;
+            font-size: 14px;
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .search-container {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            #search-button {
+                width: 100%;
+                height: 44px;
+            }
+
+            #search-input {
+                width: 100%;
+                padding: 10px 12px;
+            }
+        }
+
+        /* 代码块样式 */
+        .code-block {
+            background: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            color: #24292e;
+        }
+
+        .code-block code {
+            display: block;
+            white-space: pre;
+        }
+
+        .code-block .comment {
+            color: #6a737d;
+        }
+
+        .code-block .command {
+            color: #032f62;
+            font-weight: 600;
+        }
+
+        /* 说明文本样式 */
+        .description {
+            color: #586069;
+            margin: 16px 0;
+        }
+
+        .description strong {
+            color: #24292e;
+        }
+
+        .description code {
+            background: #f6f8fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            color: #24292e;
+            border: 1px solid #e1e4e8;
+        }
+
+        /* 警告提示样式 */
+        .warning {
+            background: #fff8c5;
+            border: 1px solid #eed888;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+            color: #735c0f;
+        }
+
+        .warning strong {
+            color: #735c0f;
+        }
     </style>
-  </head>
-  <body>
-    <h1>Welcome to nginx!</h1>
-    <p>If you see this page, the nginx web server is successfully installed and working. Further configuration is required.</p>
+</head>
+<body>
+    <!-- 添加导航栏 -->
+    <div class="nav-wrapper">
+        <nav class="nav">
+            <a href="/" class="nav-brand">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.186.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.186.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.186.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.184-.186h-2.12a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.082.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288z"/>
+                </svg>
+                Docker 镜像加速
+            </a>
+            <ul class="nav-menu">
+                <li><a href="//gh-proxy.com/">Github 文件加速</a></li>
+                <li><a href="./" class="active">Docker 镜像加速器</a></li>
+                <li><a href="//qrcode.gh-proxy.com/">网页链接二维码生成器</a></li>
+                <li><a href="//gh-proxy.com/donate">捐赠</a></li>
+                <li><a href="//gh-proxy.com/donate/list/donations">捐赠列表</a></li>
+            </ul>
+        </nav>
+    </div>
 
-    <p>
-      For online documentation and support please refer to <a href="http://nginx.org/">nginx.org</a>.<br />
-      Commercial support is available at
-      <a href="http://nginx.com/">nginx.com</a>.
-    </p>
+    <!-- 将原有内容包装在page-container中 -->
+    <div class="page-container">
+        <div class="container">
+            <!-- 原有内容... -->
+            <div class="image-acceleration-section">
+                <h1 class="main-title">Docker 镜像加速器 🚀</h1>
+                
+                <!-- <h2 class="sub-title">快速拉取测试</h2> -->
 
-    <p><em>Thank you for using nginx.</em></p>
-  </body>
+                <div class="image-input-section">
+                    <p class="input-tip">请严格按照本站支持的规则输入镜像地址。如果不包含特定域名前缀，将按 Docker Hub 镜像处理。</p>
+                    <p class="input-tip"><strong style="color: #55a532;">搜索镜像👉：</strong></p>
+                    <div class="search-container">
+                        <input type="text" id="search-input" placeholder="Search Docker Hub">
+                        <button id="search-button" onclick="performSearch()">
+                            <svg focusable="false" aria-hidden="true" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
+                                    stroke="white" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <!--<input type="text" id="image-input" placeholder="输入镜像地址,如 cleverest/crproxy、nginx 或 gcr.io/kaniko-project/executor:debug">
+                    
+                    <div id="pull-commands" style="display: none;">
+                        <h3 class="command-title">拉取命令:</h3>
+                        <div id="docker-hub-commands" style="display: none;">
+                            <p><strong>Docker Hub 镜像拉取方式(<strong style="color: red;">第一条仅限配置代理加速后使用</strong>):</strong></p>
+                            <div class="command-line">
+                                <code id="docker-hub-1"></code>
+                                <button class="copy-btn" onclick="copyToClipboard('docker-hub-1', this)">复制</button>
+                            </div>
+                            <div class="command-line">
+                                <code id="docker-hub-2"></code>
+                                <button class="copy-btn" onclick="copyToClipboard('docker-hub-2', this)">复制</button>
+                            </div>
+                            <div class="command-line">
+                                <code id="docker-hub-3"></code>
+                                <button class="copy-btn" onclick="copyToClipboard('docker-hub-3', this)">复制</button>
+                            </div>
+                        </div>
+                        <div id="other-registry-command" style="display: none;">
+                            <p><strong>其他镜像源拉取方式:</strong></p>
+                            <div class="command-line">
+                                <code id="other-registry"></code>
+                                <button class="copy-btn" onclick="copyToClipboard('other-registry', this)">复制</button>
+                            </div>
+                        </div>
+                    </div>-->
+                </div>
+            </div>
+
+            <style>
+            .image-acceleration-section {
+                text-align: center;
+                padding: 20px;
+                background-color: #f9f9f9;
+                border-radius: 8px;
+                margin-bottom: 30px;
+            }
+            .main-title {
+                font-size: 2.5em;
+                color: #333;
+                margin-bottom: 20px;
+            }
+            .sub-title {
+                font-size: 1.8em;
+                color: #444;
+                margin-bottom: 15px;
+            }
+            .image-input-section {
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            .input-tip {
+                color: #666;
+                font-size:16px;
+                margin-bottom: 10px;
+                text-align: left;
+            }
+            #image-input {
+                width: 100%;
+                padding: 12px;
+                margin-top: 5px;
+                margin-bottom: 15px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 1em;
+            }
+            .command-title {
+                font-size: 1.4em;
+                color: #555;
+                margin-top: 20px;
+                margin-bottom: 15px;
+            }
+            .command-line {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+                text-align: left;
+            }
+            .command-line code {
+                flex-grow: 1;
+                padding: 10px;
+                background-color: #e0e0e0;
+                border-radius: 4px;
+                font-size: 0.9em;
+            }
+            .copy-btn {
+                margin-left: 10px;
+                padding: 8px 15px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+                font-size: 0.9em;
+            }
+            .copy-btn:hover {
+                background-color: #45a049;
+            }
+            .copy-btn.copied {
+                background-color: #2196F3;
+            }
+
+            @media (max-width: 600px) {
+                #image-input {
+                    width: calc(100% - 20px); /* Adjust width to fit better on mobile */
+                    font-size: 0.9em;
+                    padding: 10px;
+                    margin: 0 auto;
+                }
+                .input-tip {
+                    font-size: 14px;
+                }
+                .command-line code {
+                    font-size: 0.8em;
+                    padding: 8px;
+                }
+                .copy-btn {
+                    padding: 6px 12px;
+                    font-size: 0.8em;
+                }
+            }
+            </style>
+
+            <script>
+            const otherRegistries = [
+                'gcr.io',
+                'ghcr.io',
+                'k8s.gcr.io',
+                'registry.k8s.io',
+                'quay.io',
+                'mcr.microsoft.com',
+                'docker.elastic.co',
+                'nvcr.io',
+                'registry.jujucharms.com',
+                'cr.l5d.io'
+            ];
+
+            function updatePullCommands() {
+                var input = document.getElementById('image-input').value.trim();
+                var pullCommands = document.getElementById('pull-commands');
+                var dockerHubCommands = document.getElementById('docker-hub-commands');
+                var otherRegistryCommand = document.getElementById('other-registry-command');
+                
+                // 获取 hostname
+                var defaultHost = "your-crproxy.onrender.com";
+                var hostname = window.location.hostname || defaultHost;
+                if (window.location.port) {
+                    hostname += ":" + window.location.port;
+                }
+                
+                if (input === '') {
+                    pullCommands.style.display = 'none';
+                    return;
+                }
+                
+                pullCommands.style.display = 'block';
+                
+                if (otherRegistries.some(registry => input.startsWith(registry + '/'))) {
+                    // Other registry
+                    dockerHubCommands.style.display = 'none';
+                    otherRegistryCommand.style.display = 'block';
+                    document.getElementById('other-registry').textContent = `docker pull ${hostname}/${input}`;
+                } else {
+                    // Docker Hub
+                    dockerHubCommands.style.display = 'block';
+                    otherRegistryCommand.style.display = 'none';
+                    document.getElementById('docker-hub-1').textContent = `docker pull ${input}`;
+                    document.getElementById('docker-hub-2').textContent = `docker pull ${hostname}/${input}`;
+                    document.getElementById('docker-hub-3').textContent = `docker pull ${hostname}/docker.io/${input}`;
+                }
+            }
+
+            function copyToClipboard(elementId, button) {
+                var element = document.getElementById(elementId);
+                var text = element.textContent;
+                navigator.clipboard.writeText(text).then(function() {
+                    button.textContent = '已复制';
+                    button.classList.add('copied');
+                    setTimeout(function() {
+                        button.textContent = '复制';
+                        button.classList.remove('copied');
+                    }, 3000);
+                }, function(err) {
+                    console.error('无法复制文本: ', err);
+                });
+            }
+
+            document.getElementById('image-input').addEventListener('input', updatePullCommands);
+            </script>
+            
+            <div class="crossnote markdown-preview">
+            
+            <h1 id="docker镜像加速器" style="margin-top: -30px;">使用说明</h1>
+
+            <h2 id="1加速器配置">1.加速器配置 </h2>
+            <div class="description">
+                <p>在 <strong><code>/etc/docker/daemon.json</code></strong> 文件中， <strong><code>registry-mirrors</code></strong> 部分，请将代理地址替换为你搭建的 <strong><code>实际地址</code></strong>。</p>
+            </div>
+
+            <div class="code-block">
+                <code><span class="comment"># 配置 Docker 加速器</span>
+cat > /etc/docker/daemon.json <<EOF
+{
+  "registry-mirrors": ["https://<span id="hostname-span"></span>"],
+  "insecure-registries": ["<span id="hostname-span"></span>"],
+  "exec-opts": ["native.cgroupdriver=systemd"]
+}
+EOF</code>
+            </div>
+
+            <div class="code-block">
+                <code><span class="comment"># 重启Docker服务</span>
+<span class="command">systemctl daemon-reload && systemctl restart docker</span></code>
+            </div>
+
+            <h2 id="3拉取测试">2.拉取测试 </h2>
+            <div class="warning">
+                <strong>📢 注意事项：</strong> 若配置了加速器地址，并且镜像源于 <code>Docker Hub</code> 时，<strong>可以无需加上域名前缀</strong>，<strong>其他镜像源站必须加上前缀</strong>。
+            </div>
+
+            <div class="description">
+                <p>源于 <strong><code>Docker Hub</code></strong> 镜像地址： <strong><code>cleverest/crproxy</code></strong> 与 <strong><code>adguard/adguardhome</code></strong> ，则</p>
+            </div>
+
+            <div class="code-block">
+                <code><span class="comment"># 直接拉取</span>
+docker pull cleverest/crproxy
+docker pull adguard/adguardhome
+
+<span class="comment"># 当然也是可以加上前缀，如：</span>
+docker pull <span id="hostname-span"></span>/cleverest/crproxy
+docker pull <span id="hostname-span"></span>/adguard/adguardhome
+
+docker pull <span id="hostname-span"></span>/docker.io/cleverest/crproxy
+docker pull <span id="hostname-span"></span>/docker.io/adguard/adguardhome</code>
+            </div>
+
+            <div class="description">
+                <p>拉取 <strong>非<code>Docker Hub</code></strong> 平台镜像时， <strong>必须加域名前缀</strong>，各个知名镜像站拉取测试，如下：</p>
+            </div>
+
+            <div class="code-block">
+                <code><span class="comment"># Google</span>
+docker pull <span id="hostname-span"></span>/gcr.io/kaniko-project/executor:debug
+
+<span class="comment"># GitHub</span>
+docker pull <span id="hostname-span"></span>/ghcr.io/openfaas/queue-worker
+
+<span class="comment"># Kubernetes</span>
+docker pull <span id="hostname-span"></span>/k8s.gcr.io/etcd:3.5.7-0
+
+<span class="comment"># 新Kubernetes</span>
+docker pull <span id="hostname-span"></span>/registry.k8s.io/kube-apiserver:v1.30.0
+
+<span class="comment"># Red Hat</span>
+docker pull <span id="hostname-span"></span>/quay.io/calico/cni
+
+<span class="comment"># Microsoft</span>
+docker pull <span id="hostname-span"></span>/mcr.microsoft.com/powershell
+
+<span class="comment"># Elastic</span>
+docker pull <span id="hostname-span"></span>/docker.elastic.co/elasticsearch/elasticsearch:8.1.0
+
+<span class="comment"># NVIDIA</span>
+docker pull <span id="hostname-span"></span>/nvcr.io/nvidia/cuda:12.1.0-runtime-ubuntu20.04</code>
+            </div>
+
+            <p style="text-align:center;" id="time"></p>
+            <p style="text-align:center;" id="cf"></p>
+            </div>
+            
+            <script>
+                var defaultHost = "your-crproxy.onrender.com";
+                var hostname = window.location.hostname || defaultHost;
+                if (window.location.port) {
+                    hostname += ":" + window.location.port;
+                }
+                var spans = document.querySelectorAll('span[id="hostname-span"]');
+                spans.forEach(function(span) {
+                    span.textContent = hostname;
+                });
+            </script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js" integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            <script>
+
+                window.onload = function () {
+                    // 在这里编写需要在页面加载完成后执行的代码
+                    // 更新时间定时器
+                    let intervalIdTime = setInterval(updateTime, 1000);
+                    // clearInterval(intervalIdTime);
+                    updateCloudflareInfo();
+                    // 公告
+                    //swal("温馨提示", "test");
+                };
+                // 实时时间
+                function getCurrentTime() {
+                    let now = new Date();
+                    let year = now.getFullYear();
+                    let month = (now.getMonth() + 1).toString().padStart(2, '0');
+                    let day = now.getDate().toString().padStart(2, '0');
+                    let hours = now.getHours().toString().padStart(2, '0');
+                    let minutes = now.getMinutes().toString().padStart(2, '0');
+                    let seconds = now.getSeconds().toString().padStart(2, '0');
+                    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                }
+                // 更新界面时间
+                async function updateTime() {
+                    const timeElement = document.getElementById('time');
+                    timeElement.textContent = getCurrentTime();
+                }
+                // 获取cloudflare cdn信息
+                async function updateCloudflareInfo() {
+                    try {
+                        const response = await fetch('/cdn-cgi/trace');
+                        if (response.ok) {
+                            const data = await response.text();
+                            const lines = data.split('\n');
+                            const info = {};
+                            lines.forEach(line => {
+                                const parts = line.split('=');
+                                if (parts.length === 2) {
+                                    info[parts[0]] = parts[1];
+                                }
+                            });
+                            const cfElement = document.getElementById('cf');
+                            const displayText = info.loc + " " + info.ip + " | " + info.colo + " | " + info.http +
+                                " | " + info.visit_scheme + " | " + info.tls + " | " + info.kex;
+                            cfElement.textContent = displayText;
+                        }
+                    } catch (error) {
+                        console.error('获取Cloudflare节点信息失败: ', error);
+                    }
+                }
+
+                // docker hub 搜索
+                function performSearch() {
+                    const query = document.getElementById('search-input').value;
+                    if (query) {
+                        window.location.href = '/search?q=' + encodeURIComponent(query);
+                    }
+                }
+
+                // 监听回车搜索事件
+                // document.getElementById('search-button').addEventListener('click', performSearch);
+                document.getElementById('search-input').addEventListener('keypress', function (event) {
+                    if (event.key === 'Enter') {
+                        performSearch();
+                    }
+                });
+            </script>
+        </div>
+    </div>
+</body>
 </html>
